@@ -1,0 +1,18 @@
+# OSX
+.DS_Store
+
+# android
+gen
+bin
+obj
+
+# gradle
+build
+.gradle
+
+# intellij
+.idea
+*.iml
+
+# eclipse
+local.properties

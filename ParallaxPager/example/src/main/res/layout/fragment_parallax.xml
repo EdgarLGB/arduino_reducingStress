@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    >
+
+  <android.support.v7.widget.Toolbar
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:id="@+id/toolbar"
+      android:background="@android:color/white">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:id="@+id/title_text"
+        android:text="@string/title"
+        android:textColor="@android:color/black"
+        android:layout_marginLeft="490dp"
+        app:x_in="5.0"
+        app:x_out="5.0"
+        />
+  </android.support.v7.widget.Toolbar>
+
+  <com.prolificinteractive.parallaxpager.ParallaxContainer
+      android:id="@+id/parallax_container"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      />
+
+
+</LinearLayout>

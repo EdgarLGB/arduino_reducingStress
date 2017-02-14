@@ -1,0 +1,96 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+android {
+  compileSdkVersion 23
+  buildToolsVersion "23.0.1"
+
+  defaultConfig {
+    minSdkVersion 14
+    targetSdkVersion 23
+    versionCode 1
+    versionName version
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_7
+    targetCompatibility JavaVersion.VERSION_1_7
+  }
+}
+
+task androidJavadocs(type: Javadoc) {
+  source = android.sourceSets.main.java
+}
+
+task androidJavadocsJar(type: Jar) {
+  classifier = 'javadoc'
+  //basename = artifact_id
+  from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+  classifier = 'sources'
+  //basename = artifact_id
+  from android.sourceSets.main.java.sourceFiles
+}
+
+artifacts {
+  archives androidSourcesJar
+  archives androidJavadocsJar
+}
+
+signing {
+  required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
+  sign configurations.archives
+}
+
+dependencies {
+  compile 'com.android.support:support-v4:23.0.1'
+}
+
+uploadArchives {
+  repositories.mavenDeployer {
+    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+    repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+      authentication(userName: null, password: null)
+    }
+
+    snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+      authentication(userName: null, password: null)
+    }
+
+    pom {
+      project {
+        name 'ParallaxPager'
+        packaging 'aar'
+
+        description 'Add some depth to your Android scrolling.'
+        url 'https://github.com/prolificinteractive/ParallaxPager'
+
+        scm {
+          url 'scm:git@github.com:prolificinteractive/ParallaxPager.git'
+          connection 'scm:git@github.com:prolificinteractive/ParallaxPager.git'
+          developerConnection 'scm:git@github.com:prolificinteractive/ParallaxPager.git'
+        }
+
+        licenses {
+          license {
+            name 'The Apache Software License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            distribution 'repo'
+          }
+        }
+
+        developers {
+          developer {
+            id 'prolificinteractive'
+            name 'Prolific Interactive'
+            email 'android@prolificinteractive.com'
+          }
+        }
+      }
+    }
+  }
+}
