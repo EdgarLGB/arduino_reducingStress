@@ -17,6 +17,7 @@
         android:id="@+id/title_text"
         android:text="@string/title"
         android:textColor="@android:color/black"
+        android:textSize="@dimen/text_size"
         android:layout_marginLeft="490dp"
         app:x_in="5.0"
         app:x_out="5.0"

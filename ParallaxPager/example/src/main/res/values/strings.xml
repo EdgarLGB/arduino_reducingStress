@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Sensobus</string>
+  <string name="app_name">Woak</string>
   <string name="mercury">Mercury</string>
   <string name="venus">Venus</string>
   <string name="earth">Earth</string>
@@ -10,5 +10,6 @@
   <string name="saturn">Saturn</string>
   <string name="uranus">Uranus</string>
   <string name="neptune">Neptune</string>
-  <string name="title">La Poésie</string>
+  <string name="title">WOAK</string>
+  <string name="turn_off_light">Eteindre la lumière</string>
 </resources>

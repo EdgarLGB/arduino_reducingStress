@@ -1,9 +1,9 @@
 package com.prolificinteractive.parallaxproject;
 
 import android.content.DialogInterface;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -12,9 +12,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,8 +24,6 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Executors;
 
 public class ParallaxFragment extends Fragment implements ViewPager.OnPageChangeListener, View.OnTouchListener {
@@ -43,6 +38,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   private static final int PORT = 80;
   private static final String START = "start";
   private static final String TURNOFF = "turnoff";
+  private static final String TITLE = "Vous voulez choisir:";
 
   private static final int MODE_TAKING_BREAK = 0;
   private static final int MODE_MEDITATION = 1;
@@ -88,7 +84,13 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     parallaxContainer.setOnPageChangeListener(this);
 
     // initiate the mediaplayer with the first son
-    player = MediaPlayer.create(getContext(), R.raw.son1);
+    player = MediaPlayer.create(getContext(), R.raw.meditation);
+
+    // set the font family for the title_text
+    TextView textView = (TextView) view.findViewById(R.id.title_text);
+    Typeface typeface = Typeface.DEFAULT.createFromAsset(getContext().getAssets(), "fonts/Omnibus.otf");
+    textView.setTypeface(typeface);
+
 
     return view;
   }
@@ -111,13 +113,13 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     player.release();
     switch (position % 3) {
       case 0:
-        player = MediaPlayer.create(getContext(), R.raw.son1);
+        //player = MediaPlayer.create(getContext(), R.raw.son1);
         break;
       case 1:
-        player = MediaPlayer.create(getContext(), R.raw.son2);
+        player = MediaPlayer.create(getContext(), R.raw.meditation);
         break;
       case 2:
-        player = MediaPlayer.create(getContext(), R.raw.son3);
+        player = MediaPlayer.create(getContext(), R.raw.cardiaque);
         break;
     }
   }
@@ -133,11 +135,11 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     Executors.newSingleThreadExecutor().submit(new ArduinoThread());
     Log.i("info", "start");
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-    builder.setTitle("Title");
+    builder.setTitle(TITLE);
 
     // set up the number picker
     final NumberPicker np = new NumberPicker(getContext());
-    np.setMinValue(30);
+    np.setMinValue(15);
     np.setMaxValue(60);
     builder.setView(np);
 
@@ -148,7 +150,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
         delay = np.getValue();
       }
     });
-    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+    builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialog, int which) {
         delay = 30;
@@ -188,7 +190,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
       case MotionEvent.ACTION_DOWN: {
         switch ((String)v.getTag()) {
           case START:
-            v.setBackgroundResource(R.drawable.bizi2);
+            //v.setBackgroundResource(R.drawable.bizi2);
             break;
         }
         break;
@@ -196,7 +198,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
       case MotionEvent.ACTION_UP: {
         switch ((String)v.getTag()) {
           case START:
-            v.setBackgroundResource(R.drawable.bizi);
+            //v.setBackgroundResource(R.drawable.bizi);
             try {
               play();
             } catch (InterruptedException e) {
