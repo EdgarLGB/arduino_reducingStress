@@ -110,26 +110,31 @@ void loop()
         case GREEN_LIGHT:
           //start the green light
           Serial.println("turn on the green light");
-          hue = 0.5;
+          hue = 1.0;
           rgbval = HSV_to_RGB(hue, saturation, value);
           rgb[0] = (rgbval & 0x00FF0000) >> 16; // there must be better ways
           rgb[1] = (rgbval & 0x0000FF00) >> 8;
           rgb[2] = rgbval & 0x000000FF;
-          analogWrite(GREEN_PIN, rgb[2] * bright[2]/256);          
+          analogWrite(GREEN_PIN, rgb[0] * bright[0]/256);          
           break;
           
         case PURPLE_LIGHT:
           //start the light purple
           Serial.println("turn on the purple light");
-          analogWrite(FAN_PIN, FANSPEED);
-          //start the green light
-          hue = 0.5;
+          //start the redlight with a 0.4 brightness
+          hue = 0.9;
           rgbval = HSV_to_RGB(hue, saturation, value);
           rgb[0] = (rgbval & 0x00FF0000) >> 16; // there must be better ways
           rgb[1] = (rgbval & 0x0000FF00) >> 8;
           rgb[2] = rgbval & 0x000000FF;
-          analogWrite(RED_PIN, rgb[0] * bright[0]/256); 
-          analogWrite(BLUE_PIN, rgb[1] * bright[1]/256);         
+          analogWrite(RED_PIN, rgb[1] * bright[1]/256);
+          //start the bluelight with a 0.6 brightness
+          hue = 0.2;
+          rgbval = HSV_to_RGB(hue, saturation, value);
+          rgb[0] = (rgbval & 0x00FF0000) >> 16; // there must be better ways
+          rgb[1] = (rgbval & 0x0000FF00) >> 8;
+          rgb[2] = rgbval & 0x000000FF; 
+          analogWrite(BLUE_PIN, rgb[0] * bright[0]/256);         
           break;
 
         case FAN:
