@@ -5,7 +5,7 @@
 #define RED_PIN 9
 #define BLUE_PIN 10
 #define GREEN_PIN 11
-#define FANSPEED 1023
+#define FANSPEED 512
 
 #define BLUE_LIGHT_DIM 1  //turn on the blue light
 #define BLUE_LIGHT_BRIGHT 6 //turn on the blue light brightly
@@ -88,7 +88,7 @@ void loop()
         case BLUE_LIGHT_DIM:
           //start the blue light very darkly
           Serial.println("turn on the blue light dimly");
-          hue = 0.2;
+          hue = 0.5;
           rgbval = HSV_to_RGB(hue, saturation, value);
           rgb[0] = (rgbval & 0x00FF0000) >> 16; // there must be better ways
           rgb[1] = (rgbval & 0x0000FF00) >> 8;
