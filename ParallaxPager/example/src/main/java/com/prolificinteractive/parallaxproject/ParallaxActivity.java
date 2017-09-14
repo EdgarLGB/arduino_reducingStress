@@ -2,6 +2,7 @@ package com.prolificinteractive.parallaxproject;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 
 import com.prolificinteractive.parallaxpager.ParallaxContextWrapper;
@@ -27,6 +28,8 @@ public class ParallaxActivity extends AppCompatActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDeath().build());
+    StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().penaltyDeath().build());
     setContentView(R.layout.activity_parallax);
 
     if (savedInstanceState == null) {
