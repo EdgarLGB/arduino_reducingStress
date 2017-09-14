@@ -30,6 +30,7 @@ import java.net.UnknownHostException;
 public class ParallaxFragment extends Fragment implements ViewPager.OnPageChangeListener, View.OnTouchListener {
 
   private ConnectAction connectAction;
+  private SendAction sendAction;
   private Socket socket;
   private PrintWriter writer;
   private MediaPlayer player;
@@ -270,7 +271,8 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   }
 
   private void send(int nums) {
-    new SendAction().execute(nums);
+    if (sendAction == null) sendAction = new SendAction();
+    sendAction.execute(nums);
   }
 
   private void play() throws InterruptedException {
@@ -281,7 +283,6 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
         send(BLUE_LIGHT_DIM);
         Thread.sleep(delay * 1000);
         send(BLUE_LIGHT_BRIGHT);
-        stopMusic();
         break;
 
       case MODE_MEDITATION:
