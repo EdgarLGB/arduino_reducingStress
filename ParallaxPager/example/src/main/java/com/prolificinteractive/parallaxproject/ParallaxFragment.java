@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.prolificinteractive.parallaxpager.ParallaxContainer;
 
 import java.io.BufferedWriter;
@@ -25,11 +26,12 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.concurrent.Executors;
 
 public class ParallaxFragment extends Fragment implements ViewPager.OnPageChangeListener, View.OnTouchListener {
 
-  private ArduinoAction arduinoAction;
+  private ConnectAction connectAction;
+  private Socket socket;
+  private PrintWriter writer;
   private MediaPlayer player;
   private int whichPage = 0;
   private int delay = 0;
@@ -132,8 +134,8 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   public void onStart() {
     super.onStart();
     //start the socket between arduino
-    arduinoAction = new ArduinoAction();
-    arduinoAction.execute();
+    connectAction = new ConnectAction();
+    connectAction.execute();
     Log.i("info", "start");
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
     builder.setTitle(TITLE);
@@ -165,10 +167,10 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   @Override
   public void onStop() {
     //stop all the fan
-    arduinoAction.send(TURN_OFF);
+    send(TURN_OFF);
     stopMusic();
     Toast.makeText(getContext(), "stop all the things", Toast.LENGTH_SHORT).show();
-    arduinoAction.close();
+    connectAction.close();
     super.onStop();
   }
 
@@ -195,7 +197,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
             }
             break;
           case TURNOFF:
-            arduinoAction.send(TURN_OFF);
+            send(TURN_OFF);
             break;
         }
         break;
@@ -220,10 +222,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     }
   }
 
-  private class ArduinoAction extends AsyncTask<Void, Void, Void> {
-    private Socket socket;
-    private PrintWriter writer;
-
+  private class ConnectAction extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... voids) {
       try {
@@ -234,9 +233,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
           writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
           if (socket.isConnected()) {
             Log.d("debug", "connect");
-            Toast.makeText(getContext(), "Successfully connect to Arduino", Toast.LENGTH_SHORT).show();
           } else {
-            Toast.makeText(getContext(), "Fail to connect to Arduino", Toast.LENGTH_SHORT).show();
             Log.d("debug", "fail to connect");
           }
         } catch (IOException e) {
@@ -251,10 +248,6 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
       return null;
     }
 
-    protected void send(int num) {
-      writer.println(num);
-    }
-
     protected void close() {
       try {
         socket.close();
@@ -265,45 +258,60 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     }
   }
 
+  private class SendAction extends AsyncTask<Integer, Void, Void> {
+
+    @Override
+    protected Void doInBackground(Integer... nums) {
+      for (int num: nums) {
+        writer.println(num);
+      }
+      return null;
+    }
+  }
+
+  private void send(int nums) {
+    new SendAction().execute(nums);
+  }
+
   private void play() throws InterruptedException {
     switch (whichPage) {
       case MODE_TAKING_BREAK:
         // start the blue light
         Toast.makeText(getContext(), "start the blue light...", Toast.LENGTH_SHORT).show();
-        arduinoAction.send(BLUE_LIGHT_DIM);
+        send(BLUE_LIGHT_DIM);
         Thread.sleep(delay * 1000);
-        arduinoAction.send(BLUE_LIGHT_BRIGHT);
+        send(BLUE_LIGHT_BRIGHT);
         stopMusic();
         break;
 
       case MODE_MEDITATION:
         // start the green light
         Toast.makeText(getContext(), "start the green light...", Toast.LENGTH_SHORT).show();
-        arduinoAction.send(GREEN_LIGHT);
+        send(GREEN_LIGHT);
         // start the music
         Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
         playMusic();
         // start the fan
         Toast.makeText(getContext(), "start the fan...", Toast.LENGTH_SHORT).show();
-        arduinoAction.send(FAN);
+        send(FAN);
         // wait for a couple of secondes
         Thread.sleep(delay * 1000);
         // then turn off all the things
-        arduinoAction.send(TURN_OFF);
+        send(TURN_OFF);
         stopMusic();
         break;
 
       case MODE_RESPIRATION:
         // start the purple light
         Toast.makeText(getContext(), "start the purple light...", Toast.LENGTH_SHORT).show();
-        arduinoAction.send(PURPLE_LIGHT);
+        send(PURPLE_LIGHT);
         // start the music
         Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
         playMusic();
         // wait for a couple of secondes
         Thread.sleep(delay * 1000);
         // then turn off all the things
-        arduinoAction.send(TURN_OFF);
+        send(TURN_OFF);
         stopMusic();
         break;
     }
