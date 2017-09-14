@@ -10,7 +10,7 @@
   <LinearLayout
       android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="@dimen/picture_height"
       android:id="@+id/linearLayout">
 
     <RelativeLayout
