@@ -3,6 +3,7 @@ package com.prolificinteractive.parallaxproject;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
@@ -165,7 +166,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   public void onStop() {
     //stop all the fan
     if (writer != null) {
-      writer.println(TURN_OFF);
+      new AsyncAction().execute(TURN_OFF);
     }
     stopMusic();
     Toast.makeText(getContext(), "stop all the things", Toast.LENGTH_SHORT).show();
@@ -206,7 +207,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
             }
             break;
           case TURNOFF:
-            writer.println(TURN_OFF);
+            new AsyncAction().execute(TURN_OFF);
             break;
         }
         break;
@@ -231,47 +232,58 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     }
   }
 
+  private class AsyncAction extends AsyncTask<Integer, Void, Void> {
+    @Override
+    protected Void doInBackground(Integer... integers) {
+      for (int num: integers) {
+        writer.println(num);
+        try {
+          Thread.sleep(delay * 1000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      return null;
+    }
+  }
+
   private void play() throws InterruptedException {
     switch (whichPage) {
       case MODE_TAKING_BREAK:
         // start the blue light
         Toast.makeText(getContext(), "start the blue light...", Toast.LENGTH_SHORT).show();
-        writer.println(BLUE_LIGHT_DIM);
-        // wait for a couple of secondes
-        Thread.sleep(delay * 1000);
-        // then turn off all the things
-        writer.println(BLUE_LIGHT_BRIGHT);
+        new AsyncAction().execute(BLUE_LIGHT_DIM, BLUE_LIGHT_BRIGHT);
         stopMusic();
         break;
 
       case MODE_MEDITATION:
         // start the green light
         Toast.makeText(getContext(), "start the green light...", Toast.LENGTH_SHORT).show();
-        writer.println(GREEN_LIGHT);
+        new AsyncAction().execute(GREEN_LIGHT);
         // start the music
         Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
         playMusic();
         // start the fan
         Toast.makeText(getContext(), "start the fan...", Toast.LENGTH_SHORT).show();
-        writer.println(FAN);
+        new AsyncAction().execute(FAN);
         // wait for a couple of secondes
         Thread.sleep(delay * 1000);
         // then turn off all the things
-        writer.println(TURN_OFF);
+        new AsyncAction().execute(TURN_OFF);
         stopMusic();
         break;
 
       case MODE_RESPIRATION:
         // start the purple light
         Toast.makeText(getContext(), "start the purple light...", Toast.LENGTH_SHORT).show();
-        writer.println(PURPLE_LIGHT);
+        new AsyncAction().execute(PURPLE_LIGHT);
         // start the music
         Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
         playMusic();
         // wait for a couple of secondes
         Thread.sleep(delay * 1000);
         // then turn off all the things
-        writer.println(TURN_OFF);
+        new AsyncAction().execute(TURN_OFF);
         stopMusic();
         break;
     }
