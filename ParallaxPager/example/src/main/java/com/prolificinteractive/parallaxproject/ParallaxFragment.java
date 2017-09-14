@@ -29,9 +29,8 @@ import java.util.concurrent.Executors;
 
 public class ParallaxFragment extends Fragment implements ViewPager.OnPageChangeListener, View.OnTouchListener {
 
+  private ArduinoAction arduinoAction;
   private MediaPlayer player;
-  private Socket socket;
-  private PrintWriter writer;
   private int whichPage = 0;
   private int delay = 0;
 
@@ -133,7 +132,8 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   public void onStart() {
     super.onStart();
     //start the socket between arduino
-    Executors.newSingleThreadExecutor().submit(new ArduinoThread());
+    arduinoAction = new ArduinoAction();
+    arduinoAction.execute();
     Log.i("info", "start");
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
     builder.setTitle(TITLE);
@@ -165,22 +165,10 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
   @Override
   public void onStop() {
     //stop all the fan
-    if (writer != null) {
-      new AsyncAction().execute(TURN_OFF);
-    }
+    arduinoAction.send(TURN_OFF);
     stopMusic();
     Toast.makeText(getContext(), "stop all the things", Toast.LENGTH_SHORT).show();
-    try {
-      if (socket != null) {
-        socket.close();
-      }
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    if (writer != null) {
-      writer.close();
-      Log.i("info", "close");
-    }
+    arduinoAction.close();
     super.onStop();
   }
 
@@ -207,7 +195,7 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
             }
             break;
           case TURNOFF:
-            new AsyncAction().execute(TURN_OFF);
+            arduinoAction.send(TURN_OFF);
             break;
         }
         break;
@@ -232,79 +220,23 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
     }
   }
 
-  private class AsyncAction extends AsyncTask<Integer, Void, Void> {
-    @Override
-    protected Void doInBackground(Integer... integers) {
-      for (int num: integers) {
-        writer.println(num);
-        try {
-          Thread.sleep(delay * 1000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      }
-      return null;
-    }
-  }
-
-  private void play() throws InterruptedException {
-    switch (whichPage) {
-      case MODE_TAKING_BREAK:
-        // start the blue light
-        Toast.makeText(getContext(), "start the blue light...", Toast.LENGTH_SHORT).show();
-        new AsyncAction().execute(BLUE_LIGHT_DIM, BLUE_LIGHT_BRIGHT);
-        stopMusic();
-        break;
-
-      case MODE_MEDITATION:
-        // start the green light
-        Toast.makeText(getContext(), "start the green light...", Toast.LENGTH_SHORT).show();
-        new AsyncAction().execute(GREEN_LIGHT);
-        // start the music
-        Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
-        playMusic();
-        // start the fan
-        Toast.makeText(getContext(), "start the fan...", Toast.LENGTH_SHORT).show();
-        new AsyncAction().execute(FAN);
-        // wait for a couple of secondes
-        Thread.sleep(delay * 1000);
-        // then turn off all the things
-        new AsyncAction().execute(TURN_OFF);
-        stopMusic();
-        break;
-
-      case MODE_RESPIRATION:
-        // start the purple light
-        Toast.makeText(getContext(), "start the purple light...", Toast.LENGTH_SHORT).show();
-        new AsyncAction().execute(PURPLE_LIGHT);
-        // start the music
-        Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
-        playMusic();
-        // wait for a couple of secondes
-        Thread.sleep(delay * 1000);
-        // then turn off all the things
-        new AsyncAction().execute(TURN_OFF);
-        stopMusic();
-        break;
-    }
-
-  }
-
-
-  class ArduinoThread implements Runnable {
+  private class ArduinoAction extends AsyncTask<Void, Void, Void> {
+    private Socket socket;
+    private PrintWriter writer;
 
     @Override
-    public void run() {
+    protected Void doInBackground(Void... voids) {
       try {
         InetAddress address = InetAddress.getByName(SERVER_IP);
         Log.d("debug", "try to connect to " + SERVER_IP);
         socket = new Socket(address, PORT);
         try {
-
           writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
           if (socket.isConnected()) {
             Log.d("debug", "connect");
+            Toast.makeText(getContext(), "Successfully connect to Arduino", Toast.LENGTH_SHORT).show();
           } else {
+            Toast.makeText(getContext(), "Fail to connect to Arduino", Toast.LENGTH_SHORT).show();
             Log.d("debug", "fail to connect");
           }
         } catch (IOException e) {
@@ -316,6 +248,65 @@ public class ParallaxFragment extends Fragment implements ViewPager.OnPageChange
         Log.e("error", e.getMessage());
         e.printStackTrace();
       }
+      return null;
     }
+
+    protected void send(int num) {
+      writer.println(num);
+    }
+
+    protected void close() {
+      try {
+        socket.close();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+      writer.close();
+    }
+  }
+
+  private void play() throws InterruptedException {
+    switch (whichPage) {
+      case MODE_TAKING_BREAK:
+        // start the blue light
+        Toast.makeText(getContext(), "start the blue light...", Toast.LENGTH_SHORT).show();
+        arduinoAction.send(BLUE_LIGHT_DIM);
+        Thread.sleep(delay * 1000);
+        arduinoAction.send(BLUE_LIGHT_BRIGHT);
+        stopMusic();
+        break;
+
+      case MODE_MEDITATION:
+        // start the green light
+        Toast.makeText(getContext(), "start the green light...", Toast.LENGTH_SHORT).show();
+        arduinoAction.send(GREEN_LIGHT);
+        // start the music
+        Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
+        playMusic();
+        // start the fan
+        Toast.makeText(getContext(), "start the fan...", Toast.LENGTH_SHORT).show();
+        arduinoAction.send(FAN);
+        // wait for a couple of secondes
+        Thread.sleep(delay * 1000);
+        // then turn off all the things
+        arduinoAction.send(TURN_OFF);
+        stopMusic();
+        break;
+
+      case MODE_RESPIRATION:
+        // start the purple light
+        Toast.makeText(getContext(), "start the purple light...", Toast.LENGTH_SHORT).show();
+        arduinoAction.send(PURPLE_LIGHT);
+        // start the music
+        Toast.makeText(getContext(), "start the music...", Toast.LENGTH_SHORT).show();
+        playMusic();
+        // wait for a couple of secondes
+        Thread.sleep(delay * 1000);
+        // then turn off all the things
+        arduinoAction.send(TURN_OFF);
+        stopMusic();
+        break;
+    }
+
   }
 }
